@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abismo: Pressão Eterna</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #001a33 0%, #003366 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #00ff88;
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 1000px;
+            background: #000814;
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+        }
+
+        .screen.active {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+        }
+
+        /* TELA INICIAL */
+        #startScreen {
+            text-align: center;
+        }
+
+        .title {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.8); }
+            50% { text-shadow: 0 0 40px rgba(0, 255, 136, 1); }
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #0099ff;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        .start-info {
+            font-size: 0.95em;
+            color: #00ccff;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #000814;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* TELA DO JOGO */
+        #gameScreen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .game-header {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(0, 30, 60, 0.8);
+            border: 2px solid #0099ff;
+            border-radius: 5px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #00ff88;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #0099ff;
+            margin-bottom: 5px;
+        }
+
+        .stat-bar {
+            width: 100%;
+            height: 20px;
+            background: #001a33;
+            border: 1px solid #00ff88;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.2s ease;
+        }
+
+        .hp-fill { background: linear-gradient(90deg, #ff0000, #ff6600); }
+        .mp-fill { background: linear-gradient(90deg, #0099ff, #00ccff); }
+        .oxygen-fill { background: linear-gradient(90deg, #00ff00, #00cc00); }
+
+        .stat-value {
+            font-size: 0.85em;
+            color: #00ff88;
+            text-align: center;
+        }
+
+        .depth-display {
+            text-align: center;
+            font-size: 1.2em;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .treasure-counter {
+            text-align: center;
+            font-size: 1em;
+            color: #ffaa00;
+        }
+
+        .souto-counter {
+            text-align: center;
+            font-size: 1em;
+            color: #ff00ff;
+        }
+
+        .game-canvas-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            border: 2px solid #00ff88;
+            background: #000814;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .game-controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            padding: 10px;
+            font-size: 0.9em;
+        }
+
+        .tech-tree-btn {
+            grid-column: 1 / 3;
+        }
+
+        .pause-btn {
+            grid-column: 3 / 5;
+        }
+
+        /* TELA DE GAME OVER */
+        #gameOverScreen {
+            text-align: center;
+        }
+
+        .game-over-title {
+            font-size: 2.5em;
+            color: #ff0000;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            margin-bottom: 30px;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .stats-display {
+            background: rgba(0, 30, 60, 0.8);
+            padding: 20px;
+            border: 2px solid #ff0000;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .stat-line {
+            font-size: 1.1em;
+            color: #00ff88;
+            margin: 10px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #003366;
+        }
+
+        .stat-line:last-child {
+            border-bottom: none;
+        }
+
+        /* TELA DE ÁRVORE DE HABILIDADES */
+        #techTreeScreen {
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .tech-tree-title {
+            font-size: 2em;
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+
+        .tech-branches {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .branch {
+            background: rgba(0, 30, 60, 0.8);
+            border: 2px solid #0099ff;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .branch-title {
+            font-size: 1.2em;
+            color: #00ff88;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .tech-node {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #00ccff;
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tech-node:hover {
+            background: rgba(0, 100, 150, 0.4);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .tech-node.unlocked {
+            border-color: #00ff88;
+            background: rgba(0, 50, 30, 0.6);
+        }
+
+        .tech-node.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .tech-name {
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 5px;
+        }
+
+        .tech-desc {
+            font-size: 0.85em;
+            color: #00ccff;
+            margin-bottom: 5px;
+        }
+
+        .tech-cost {
+            font-size: 0.8em;
+            color: #ffaa00;
+            text-align: right;
+        }
+
+        .tech-points {
+            text-align: center;
+            font-size: 1.3em;
+            color: #ffaa00;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* TELA DE PAUSA */
+        #pauseScreen {
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #pauseScreen.active {
+            display: flex;
+        }
+
+        .pause-title {
+            font-size: 2.5em;
+            color: #00ff88;
+            margin-bottom: 30px;
+        }
+
+        .pause-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 10px;
+                max-width: 95vw;
+            }
+
+            .title {
+                font-size: 2em;
+            }
+
+            .game-header {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tech-branches {
+                grid-template-columns: 1fr;
+            }
+
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+
+        /* EFEITOS ESPECIAIS */
+        .sonar-pulse {
+            animation: sonarPulse 0.6s ease-out;
+        }
+
+        @keyframes sonarPulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(2);
+            }
+        }
+
+        .damage-flash {
+            animation: damageFlash 0.3s ease-out;
+        }
+
+        @keyframes damageFlash {
+            0% { background: rgba(255, 0, 0, 0.3); }
+            100% { background: rgba(255, 0, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- TELA INICIAL -->
+        <div id="startScreen" class="screen active">
+            <div class="title">⚓ ABISMO ⚓</div>
+            <div class="subtitle">Pressão Eterna</div>
+            <div class="start-info">
+                Desce ao fundo do oceano em busca de tesouros e mistérios.<br>
+                Use o sonar para revelar monstros adormecidos, mas cuidado:<br>
+                eles virão em sua direção quando descobertos.<br><br>
+                <strong>Controles:</strong> Setas/WASD para mover | ESPAÇO para sonar | L para lanterna
+            </div>
+            <button onclick="startGame()">Iniciar Mergulho</button>
+        </div>
+
+        <!-- TELA DO JOGO -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <div class="stat-box">
+                    <div class="stat-label">HP (Casco)</div>
+                    <div class="stat-bar">
+                        <div id="hpFill" class="stat-fill hp-fill" style="width: 100%"></div>
+                    </div>
+                    <div class="stat-value"><span id="hpValue">100</span>/100</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">MP (Energia)</div>
+                    <div class="stat-bar">
+                        <div id="mpFill" class="stat-fill mp-fill" style="width: 100%"></div>
+                    </div>
+                    <div class="stat-value"><span id="mpValue">100</span>/100</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">O₂ (Oxigênio)</div>
+                    <div class="stat-bar">
+                        <div id="oxygenFill" class="stat-fill oxygen-fill" style="width: 100%"></div>
+                    </div>
+                    <div class="stat-value"><span id="oxygenValue">100</span>/100</div>
+                </div>
+                <div class="stat-box treasure-counter">
+                    <div class="stat-label">💰 Tesouros</div>
+                    <div class="stat-value" style="font-size: 1.3em;"><span id="treasureCount">0</span></div>
+                </div>
+                <div class="stat-box souto-counter">
+                    <div class="stat-label">🔮 Soutos</div>
+                    <div class="stat-value" style="font-size: 1.3em;"><span id="soutoCount">0</span></div>
+                </div>
+            </div>
+
+            <div class="depth-display">
+                📊 Profundidade: <span id="depthValue">0</span>m / 11000m
+            </div>
+
+            <div class="game-canvas-container">
+                <canvas id="gameCanvas" width="800" height="400"></canvas>
+            </div>
+
+            <div class="game-controls">
+                <button class="control-btn" onclick="game.useAbility('sonar')">🔊 Sonar (ESPAÇO)</button>
+                <button class="control-btn" onclick="game.toggleLantern()">💡 Lanterna (L)</button>
+                <button class="control-btn tech-tree-btn" onclick="showTechTree()">🌳 Aprimoramentos</button>
+                <button class="control-btn pause-btn" onclick="togglePause()">⏸ Pausa</button>
+            </div>
+        </div>
+
+        <!-- TELA DE GAME OVER -->
+        <div id="gameOverScreen" class="screen">
+            <div class="game-over-title">💥 IMPLOSÃO 💥</div>
+            <div class="stats-display">
+                <div class="stat-line">📊 Profundidade Máxima: <strong id="maxDepthStat">0</strong>m</div>
+                <div class="stat-line">💰 Tesouros Coletados: <strong id="treasureStat">0</strong></div>
+                <div class="stat-line">🔮 Soutos Coletados: <strong id="soutoStat">0</strong></div>
+                <div class="stat-line">⏱ Tempo Sobrevivido: <strong id="timeStat">0</strong>s</div>
+            </div>
+            <button onclick="startGame()">🔄 Mergulhar Novamente</button>
+            <button onclick="showTechTree()">🌳 Árvore de Habilidades</button>
+        </div>
+
+        <!-- TELA DE ÁRVORE DE HABILIDADES -->
+        <div id="techTreeScreen" class="screen">
+            <div class="tech-tree-title">🌳 Árvore de Habilidades</div>
+            <div class="tech-points">Pontos de Tecnologia: <span id="techPoints">0</span></div>
+            <div class="tech-branches">
+                <!-- RAMO CASCO -->
+                <div class="branch">
+                    <div class="branch-title">🛡️ RAMO CASCO</div>
+                    <div class="tech-node" onclick="unlockTech('hull1')">
+                        <div class="tech-name">Casco Reforçado</div>
+                        <div class="tech-desc">+15% HP máximo</div>
+                        <div class="tech-cost">Custo: 1 ponto</div>
+                    </div>
+                    <div class="tech-node" onclick="unlockTech('hull2')">
+                        <div class="tech-name">Soldas de Titânio</div>
+                        <div class="tech-desc">-25% dano de colisão</div>
+                        <div class="tech-cost">Custo: 2 pontos</div>
+                    </div>
+                    <div class="tech-node" onclick="unlockTech('hull3')">
+                        <div class="tech-name">Escudo de Emergência</div>
+                        <div class="tech-desc">Escudo ao cair abaixo de 20% HP (3s)</div>
+                        <div class="tech-cost">Custo: 3 pontos</div>
+                    </div>
+                </div>
+
+                <!-- RAMO ENERGIA -->
+                <div class="branch">
+                    <div class="branch-title">⚡ RAMO ENERGIA</div>
+                    <div class="tech-node" onclick="unlockTech('energy1')">
+                        <div class="tech-name">Capacitores</div>
+                        <div class="tech-desc">+20% MP máximo</div>
+                        <div class="tech-cost">Custo: 1 ponto</div>
+                    </div>
+                    <div class="tech-node" onclick="unlockTech('energy2')">
+                        <div class="tech-name">Recarga Rápida</div>
+                        <div class="tech-desc">+10% recarga MP</div>
+                        <div class="tech-cost">Custo: 2 pontos</div>
+                    </div>
+                    <div class="tech-node" onclick="unlockTech('energy3')">
+                        <div class="tech-name">Sonar Furtivo</div>
+                        <div class="tech-desc">Monstros ouvem de mais perto</div>
+                        <div class="tech-cost">Custo: 3 pontos</div>
+                    </div>
+                </div>
+
+                <!-- RAMO FURTIVIDADE -->
+                <div class="branch">
+                    <div class="branch-title">👻 RAMO FURTIVIDADE</div>
+                    <div class="tech-node" onclick="unlockTech('stealth1')">
+                        <div class="tech-name">Filtros Avançados</div>
+                        <div class="tech-desc">-15% consumo oxigênio</div>
+                        <div class="tech-cost">Custo: 1 ponto</div>
+                    </div>
+                    <div class="tech-node" onclick="unlockTech('stealth2')">
+                        <div class="tech-name">Pintura Anti-Sonar</div>
+                        <div class="tech-desc">20% chance monstros perderem rastro</div>
+                        <div class="tech-cost">Custo: 2 pontos</div>
+                    </div>
+                    <div class="tech-node" onclick="unlockTech('stealth3')">
+                        <div class="tech-name">Visão Noturna</div>
+                        <div class="tech-desc">Tesouros brilham fracamente sem sonar</div>
+                        <div class="tech-cost">Custo: 3 pontos</div>
+                    </div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="hideScreen('techTreeScreen')">← Voltar</button>
+        </div>
+
+        <!-- TELA DE PAUSA -->
+        <div id="pauseScreen">
+            <div class="pause-title">⏸ JOGO PAUSADO</div>
+            <div class="pause-options">
+                <button onclick="togglePause()">▶ Continuar</button>
+                <button onclick="showTechTree()">🌳 Aprimoramentos</button>
+                <button onclick="returnToMenu()">🏠 Menu Principal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== SISTEMA DE JOGO =====
+        const game = {
+            // Estado do jogador
+            player: {
+                x: 400,
+                y: 200,
+                width: 30,
+                height: 20,
+                vx: 0,
+                vy: 0,
+                speed: 3,
+                hp: 100,
+                maxHp: 100,
+                mp: 100,
+                maxMp: 100,
+                oxygen: 100,
+                maxOxygen: 100,
+                treasures: 0,
+                soutos: 0,
+                depth: 0,
+                lanternOn: false,
+                shieldActive: false,
+                shieldTime: 0
+            },
+
+            // Configurações
+            config: {
+                gameWidth: 800,
+                gameHeight: 400,
+                depthIncreaseInterval: 30000, // 30 segundos = 100m
+                depthIncreaseAmount: 100,
+                oxygenDecayRate: 1, // por segundo
+                mpRechargeRate: 2, // por segundo
+                lanternMpCost: 1, // por segundo
+                sonarMpCost: 15,
+                sonarChaosTime: 10000, // 10 segundos
+                sonarRadius: 250
+            },
+
+            // Listas de entidades
+            monsters: [],
+            items: [],
+            particles: [],
+
+            // Controles
+            keys: {},
+            isPaused: false,
+            gameStartTime: 0,
+            lastDepthIncrease: 0,
+            sonarActive: false,
+            sonarTime: 0,
+            chaosMode: false,
+            chaosEndTime: 0,
+
+            // Tecnologias desbloqueadas
+            unlockedTechs: {},
+            techPoints: 0,
+
+            // Inicializar sistema (apenas uma vez)
+            initSystem() {
+                this.loadProgress();
+                this.setupEventListeners();
+                console.log("System initialized");
+            },
+
+            // Carregar progresso do localStorage
+            loadProgress() {
+                const saved = localStorage.getItem('abismoProgress');
+                if (saved) {
+                    const progress = JSON.parse(saved);
+                    this.unlockedTechs = progress.unlockedTechs || {};
+                    this.techPoints = progress.techPoints || 0;
+                    this.player.treasures = progress.treasures || 0;
+                    this.player.soutos = progress.soutos || 0;
+                    this.applyTechBonuses();
+                }
+            },
+
+            // Salvar progresso
+            saveProgress() {
+                const progress = {
+                    unlockedTechs: this.unlockedTechs,
+                    techPoints: this.techPoints,
+                    treasures: this.player.treasures,
+                    soutos: this.player.soutos
+                };
+                localStorage.setItem('abismoProgress', JSON.stringify(progress));
+            },
+
+            // Aplicar bônus de tecnologias
+            applyTechBonuses() {
+                let hpBonus = 1;
+                let mpBonus = 1;
+                let oxygenBonus = 1;
+                let damageReduction = 0;
+
+                if (this.unlockedTechs.hull1) hpBonus += 0.15;
+                if (this.unlockedTechs.hull2) damageReduction = 0.25;
+                if (this.unlockedTechs.energy1) mpBonus += 0.20;
+                if (this.unlockedTechs.energy2) this.config.mpRechargeRate *= 1.1;
+                if (this.unlockedTechs.stealth1) oxygenBonus -= 0.15;
+
+                this.player.maxHp = Math.floor(100 * hpBonus);
+                this.player.maxMp = Math.floor(100 * mpBonus);
+                this.player.maxOxygen = Math.floor(100 * oxygenBonus);
+
+                this.damageReduction = damageReduction;
+            },
+
+            // Setup de eventos
+            setupEventListeners() {
+                document.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+                    if (e.key === ' ') { e.preventDefault(); this.useAbility('sonar'); }
+                    if (e.key.toLowerCase() === 'l') this.toggleLantern();
+                    if (e.key.toLowerCase() === 'p') togglePause();
+                });
+                document.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+            },
+
+            // Spawn inicial de monstros
+            spawnInitialMonsters() {
+                for (let i = 0; i < 15; i++) {
+                    this.spawnMonster();
+                }
+            },
+
+            // Spawn de monstro
+            spawnMonster() {
+                const types = ['small', 'medium', 'large'];
+                let type = types[Math.floor(Math.random() * 2)]; // Inicialmente apenas pequeno e médio
+
+                if (this.player.depth > 6000) {
+                    type = types[Math.floor(Math.random() * 3)]; // Inclui grande
+                }
+
+                const monster = {
+                    x: Math.random() * this.config.gameWidth,
+                    y: Math.random() * this.config.gameHeight,
+                    type: type,
+                    revealed: false,
+                    active: false,
+                    vx: 0,
+                    vy: 0,
+                    speed: type === 'small' ? 2 : (type === 'medium' ? 1.2 : 0.8),
+                    damage: type === 'small' ? 5 : (type === 'medium' ? 15 : 30),
+                    size: type === 'small' ? 12 : (type === 'medium' ? 20 : 30)
+                };
+
+                this.monsters.push(monster);
+            },
+
+            // Spawn inicial de itens
+            spawnInitialItems() {
+                for (let i = 0; i < 8; i++) {
+                    this.spawnItem('treasure');
+                }
+                for (let i = 0; i < 5; i++) {
+                    this.spawnItem('souto');
+                }
+                for (let i = 0; i < 6; i++) {
+                    this.spawnItem('oxygen');
+                }
+                for (let i = 0; i < 4; i++) {
+                    this.spawnItem('battery');
+                }
+            },
+
+            // Spawn de item
+            spawnItem(type) {
+                const item = {
+                    x: Math.random() * this.config.gameWidth,
+                    y: Math.random() * this.config.gameHeight,
+                    type: type,
+                    collected: false,
+                    size: 12,
+                    glow: Math.random() * Math.PI * 2
+                };
+                this.items.push(item);
+            },
+
+            // Usar habilidade
+            useAbility(ability) {
+                if (this.isPaused) return;
+
+                if (ability === 'sonar') {
+                    if (this.player.mp >= this.config.sonarMpCost) {
+                        this.player.mp -= this.config.sonarMpCost;
+                        this.activateSonar();
+                    }
+                }
+            },
+
+            // Ativar sonar
+            activateSonar() {
+                this.sonarActive = true;
+                this.sonarTime = 0;
+                this.chaosMode = true;
+                this.chaosEndTime = Date.now() + this.config.sonarChaosTime;
+
+                // Revelar monstros
+                for (let monster of this.monsters) {
+                    const dist = Math.hypot(
+                        monster.x - this.player.x,
+                        monster.y - this.player.y
+                    );
+
+                    if (dist < this.config.sonarRadius) {
+                        monster.revealed = true;
+                        monster.active = true;
+                    }
+                }
+
+                // Revelar itens
+                for (let item of this.items) {
+                    const dist = Math.hypot(
+                        item.x - this.player.x,
+                        item.y - this.player.y
+                    );
+                    if (dist < this.config.sonarRadius) {
+                        item.revealed = true;
+                    }
+                }
+            },
+
+            // Toggle lanterna
+            toggleLantern() {
+                if (this.isPaused) return;
+                this.player.lanternOn = !this.player.lanternOn;
+            },
+
+            // Loop principal do jogo
+            gameLoop() {
+                if (!this.isPaused) {
+                    this.update();
+                }
+                this.render();
+                if (this.running) {
+                    requestAnimationFrame(() => this.gameLoop());
+                }
+            },
+
+            // Atualizar lógica do jogo
+            update() {
+                const now = Date.now();
+                const deltaTime = 0.016; // ~60fps
+
+                // Movimento do jogador
+                this.player.vx = 0;
+                this.player.vy = 0;
+
+                if (this.keys['arrowup'] || this.keys['w']) this.player.vy = -this.player.speed;
+                if (this.keys['arrowdown'] || this.keys['s']) this.player.vy = this.player.speed;
+                if (this.keys['arrowleft'] || this.keys['a']) this.player.vx = -this.player.speed;
+                if (this.keys['arrowright'] || this.keys['d']) this.player.vx = this.player.speed;
+
+                this.player.x += this.player.vx;
+                this.player.y += this.player.vy;
+
+                // Limites da tela
+                this.player.x = Math.max(0, Math.min(this.config.gameWidth - this.player.width, this.player.x));
+                this.player.y = Math.max(0, Math.min(this.config.gameHeight - this.player.height, this.player.y));
+
+                // Oxigênio
+                let oxygenDecay = this.config.oxygenDecayRate;
+                if (this.unlockedTechs.stealth1) oxygenDecay *= 0.85;
+                this.player.oxygen -= oxygenDecay * deltaTime;
+
+                // Lanterna
+                if (this.player.lanternOn && this.player.mp > 0) {
+                    this.player.mp -= this.config.lanternMpCost;
+                } else if (this.player.mp <= 0) {
+                    this.player.lanternOn = false;
+                }
+
+                // MP recharge
+                if (!this.player.lanternOn && this.player.mp < this.player.maxMp) {
+                    let rechargeRate = this.config.mpRechargeRate;
+                    if (this.unlockedTechs.energy2) rechargeRate *= 1.1;
+                    this.player.mp += rechargeRate * deltaTime;
+                    this.player.mp = Math.min(this.player.maxMp, this.player.mp);
+                }
+
+                // Profundidade
+                if (now - this.lastDepthIncrease >= this.config.depthIncreaseInterval) {
+                    this.player.depth += this.config.depthIncreaseAmount;
+                    this.lastDepthIncrease = now;
+
+                    // Ganhar ponto de tecnologia a cada 2000m
+                    if (this.player.depth % 2000 === 0 && this.player.depth > 0) {
+                        this.techPoints++;
+                        this.saveProgress();
+                    }
+
+                    // Spawn novos monstros
+                    if (this.monsters.length < 20) {
+                        this.spawnMonster();
+                    }
+                }
+
+                // Escudo de emergência
+                if (this.unlockedTechs.hull3 && this.player.hp < this.player.maxHp * 0.2 && !this.player.shieldActive) {
+                    this.player.shieldActive = true;
+                    this.player.shieldTime = 3000;
+                }
+
+                if (this.player.shieldActive) {
+                    this.player.shieldTime -= deltaTime * 1000;
+                    if (this.player.shieldTime <= 0) {
+                        this.player.shieldActive = false;
+                    }
+                }
+
+                // Atualizar monstros
+                for (let monster of this.monsters) {
+                    if (monster.active && this.chaosMode) {
+                        // Mover em direção ao jogador
+                        const dx = this.player.x - monster.x;
+                        const dy = this.player.y - monster.y;
+                        const dist = Math.hypot(dx, dy);
+
+                        if (dist > 0) {
+                            monster.vx = (dx / dist) * monster.speed;
+                            monster.vy = (dy / dist) * monster.speed;
+                        }
+
+                        monster.x += monster.vx;
+                        monster.y += monster.vy;
+
+                        // Colisão com jogador
+                        if (this.checkCollision(this.player, monster)) {
+                            let damage = monster.damage;
+                            if (this.damageReduction) {
+                                damage *= (1 - this.damageReduction);
+                            }
+                            if (!this.player.shieldActive) {
+                                this.player.hp -= damage;
+                            }
+                            monster.active = false;
+                            monster.revealed = false;
+
+                            if (this.player.hp <= 0) {
+                                this.endGame();
+                            }
+                        }
+                    }
+                }
+
+                // Verificar fim do caos
+                if (this.chaosMode && now > this.chaosEndTime) {
+                    this.chaosMode = false;
+                    for (let monster of this.monsters) {
+                        if (Math.random() > (this.unlockedTechs.stealth2 ? 0.8 : 1)) {
+                            monster.active = false;
+                            monster.revealed = false;
+                        }
+                    }
+                }
+
+                // Colisão com itens
+                for (let item of this.items) {
+                    if (!item.collected && this.checkCollision(this.player, item)) {
+                        item.collected = true;
+
+                        if (item.type === 'treasure') {
+                            this.player.treasures++;
+                        } else if (item.type === 'souto') {
+                            this.player.soutos++;
+                            const bonus = Math.floor(Math.random() * 3);
+                            if (bonus === 0) {
+                                this.player.maxOxygen = Math.floor(this.player.maxOxygen * 1.1);
+                                this.player.oxygen = this.player.maxOxygen;
+                            } else if (bonus === 1) {
+                                this.player.maxMp = Math.floor(this.player.maxMp * 1.1);
+                                this.player.mp = this.player.maxMp;
+                            } else {
+                                this.player.hp = Math.min(this.player.maxHp, this.player.hp + 10);
+                            }
+                        } else if (item.type === 'oxygen') {
+                            this.player.oxygen = Math.min(this.player.maxOxygen, this.player.oxygen + 30);
+                        } else if (item.type === 'battery') {
+                            this.player.mp = Math.min(this.player.maxMp, this.player.mp + 25);
+                        }
+
+                        this.saveProgress();
+
+                        // Spawn novo item
+                        if (Math.random() > 0.7) {
+                            const types = ['treasure', 'souto', 'oxygen', 'battery'];
+                            this.spawnItem(types[Math.floor(Math.random() * types.length)]);
+                        }
+                    }
+                }
+
+                // Game Over por falta de oxigênio
+                if (this.player.oxygen <= 0) {
+                    this.endGame();
+                }
+
+                // Atualizar UI
+                this.updateUI();
+            },
+
+            // Renderizar jogo
+            render() {
+                const canvas = document.getElementById('gameCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // Fundo baseado em profundidade
+                const depth = this.player.depth;
+                let bgColor;
+                if (depth < 200) {
+                    bgColor = '#001a4d';
+                } else if (depth < 1000) {
+                    const factor = (depth - 200) / 800;
+                    const r = Math.floor(0 + factor * 10);
+                    const g = Math.floor(26 + factor * 20);
+                    const b = Math.floor(77 + factor * 50);
+                    bgColor = `rgb(${r}, ${g}, ${b})`;
+                } else if (depth < 4000) {
+                    bgColor = '#000814';
+                } else {
+                    bgColor = '#0a0a1a';
+                }
+
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, this.config.gameWidth, this.config.gameHeight);
+
+                // Efeito de tremor em profundidades extremas
+                if (depth > 4000) {
+                    const shake = Math.sin(Date.now() * 0.01) * 2;
+                    ctx.translate(shake, shake);
+                }
+
+                // Renderizar itens
+                for (let item of this.items) {
+                    if (!item.collected) {
+                        this.renderItem(ctx, item);
+                    }
+                }
+
+                // Renderizar monstros
+                for (let monster of this.monsters) {
+                    this.renderMonster(ctx, monster);
+                }
+
+                // Renderizar sonar
+                if (this.sonarActive) {
+                    this.sonarTime += 0.016;
+                    const progress = this.sonarTime / 0.6;
+                    if (progress < 1) {
+                        ctx.strokeStyle = `rgba(0, 255, 136, ${1 - progress})`;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(this.player.x, this.player.y, this.config.sonarRadius * progress, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else {
+                        this.sonarActive = false;
+                    }
+                }
+
+                // Renderizar lanterna
+                if (this.player.lanternOn) {
+                    ctx.fillStyle = 'rgba(255, 200, 0, 0.1)';
+                    ctx.beginPath();
+                    ctx.arc(this.player.x, this.player.y, 150, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Renderizar escudo
+                if (this.player.shieldActive) {
+                    ctx.strokeStyle = `rgba(0, 255, 136, ${this.player.shieldTime / 3000})`;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.player.x, this.player.y, this.player.width + 10, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Renderizar submarino
+                this.renderSubmarine(ctx);
+
+                // Efeito de caos
+                if (this.chaosMode) {
+                    ctx.fillStyle = `rgba(255, 0, 0, ${0.1 * Math.sin(Date.now() * 0.01)})`;
+                    ctx.fillRect(0, 0, this.config.gameWidth, this.config.gameHeight);
+                }
+            },
+
+            // Renderizar submarino
+            renderSubmarine(ctx) {
+                ctx.save();
+                ctx.translate(this.player.x, this.player.y);
+
+                // Corpo
+                ctx.fillStyle = '#00ff88';
+                ctx.fillRect(-this.player.width / 2, -this.player.height / 2, this.player.width, this.player.height);
+
+                // Janela
+                ctx.fillStyle = '#0099ff';
+                ctx.fillRect(-5, -3, 10, 6);
+
+                // Propulsores
+                ctx.fillStyle = '#ffaa00';
+                ctx.fillRect(-this.player.width / 2 - 5, -3, 5, 6);
+
+                ctx.restore();
+            },
+
+            // Renderizar monstro
+            renderMonster(ctx, monster) {
+                if (!monster.revealed && !this.player.lanternOn) {
+                    // Sombra invisível
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
+                    ctx.fillRect(monster.x - 2, monster.y - 2, 4, 4);
+                } else if (monster.revealed || this.player.lanternOn) {
+                    // Monstro revelado
+                    const colors = {
+                        small: '#ff4444',
+                        medium: '#ff0000',
+                        large: '#cc0000'
+                    };
+
+                    ctx.fillStyle = colors[monster.type];
+                    ctx.beginPath();
+                    ctx.arc(monster.x, monster.y, monster.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Olhos
+                    ctx.fillStyle = '#ffff00';
+                    ctx.beginPath();
+                    ctx.arc(monster.x - monster.size / 4, monster.y - monster.size / 4, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(monster.x + monster.size / 4, monster.y - monster.size / 4, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            },
+
+            // Renderizar item
+            renderItem(ctx, item) {
+                const glow = Math.sin(Date.now() * 0.003 + item.glow) * 0.5 + 0.5;
+
+                if (item.type === 'treasure') {
+                    ctx.fillStyle = `rgba(255, 200, 0, ${0.5 + glow * 0.5})`;
+                    ctx.fillRect(item.x - item.size / 2, item.y - item.size / 2, item.size, item.size);
+                    ctx.strokeStyle = '#ffaa00';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(item.x - item.size / 2, item.y - item.size / 2, item.size, item.size);
+                } else if (item.type === 'souto') {
+                    ctx.fillStyle = `rgba(255, 0, 255, ${0.5 + glow * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(item.x, item.y, item.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ff00ff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                } else if (item.type === 'oxygen') {
+                    ctx.fillStyle = `rgba(0, 255, 0, ${0.5 + glow * 0.5})`;
+                    ctx.fillRect(item.x - item.size / 3, item.y - item.size / 2, item.size / 1.5, item.size);
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(item.x - item.size / 3, item.y - item.size / 2, item.size / 1.5, item.size);
+                } else if (item.type === 'battery') {
+                    ctx.fillStyle = `rgba(255, 100, 0, ${0.5 + glow * 0.5})`;
+                    ctx.fillRect(item.x - item.size / 2, item.y - item.size / 2, item.size, item.size);
+                    ctx.fillStyle = '#ff6400';
+                    ctx.fillRect(item.x - item.size / 3, item.y - item.size / 3, item.size / 1.5, item.size / 1.5);
+                }
+            },
+
+            // Verificar colisão
+            checkCollision(obj1, obj2) {
+                const dx = obj1.x - obj2.x;
+                const dy = obj1.y - obj2.y;
+                const dist = Math.hypot(dx, dy);
+                return dist < (obj1.width || obj1.size) / 2 + (obj2.width || obj2.size) / 2;
+            },
+
+            // Atualizar UI
+            updateUI() {
+                document.getElementById('hpValue').textContent = Math.max(0, Math.floor(this.player.hp));
+                document.getElementById('hpFill').style.width = Math.max(0, this.player.hp / this.player.maxHp * 100) + '%';
+
+                document.getElementById('mpValue').textContent = Math.floor(this.player.mp);
+                document.getElementById('mpFill').style.width = Math.max(0, this.player.mp / this.player.maxMp * 100) + '%';
+
+                document.getElementById('oxygenValue').textContent = Math.max(0, Math.floor(this.player.oxygen));
+                document.getElementById('oxygenFill').style.width = Math.max(0, this.player.oxygen / this.player.maxOxygen * 100) + '%';
+
+                document.getElementById('treasureCount').textContent = this.player.treasures;
+                document.getElementById('soutoCount').textContent = this.player.soutos;
+                document.getElementById('depthValue').textContent = this.player.depth;
+                document.getElementById('techPoints').textContent = this.techPoints;
+            },
+
+            // Fim do jogo
+            endGame() {
+                const timeSurvived = Math.floor((Date.now() - this.gameStartTime) / 1000);
+                document.getElementById('maxDepthStat').textContent = this.player.depth;
+                document.getElementById('treasureStat').textContent = this.player.treasures;
+                document.getElementById('soutoStat').textContent = this.player.soutos;
+                document.getElementById('timeStat').textContent = timeSurvived;
+
+                this.saveProgress();
+                showScreen('gameOverScreen');
+            }
+        };
+
+        // ===== FUNÇÕES DE INTERFACE =====
+        function startGame() {
+            console.log("Starting game...");
+            showScreen('gameScreen');
+            
+            // Reset player stats
+            game.player.hp = game.player.maxHp;
+            game.player.mp = game.player.maxMp;
+            game.player.oxygen = game.player.maxOxygen;
+            game.player.depth = 0;
+            game.player.x = 400;
+            game.player.y = 200;
+            game.monsters = [];
+            game.items = [];
+            game.chaosMode = false;
+            game.sonarActive = false;
+            game.player.lanternOn = false;
+            game.isPaused = false;
+
+            game.spawnInitialMonsters();
+            game.spawnInitialItems();
+            game.gameStartTime = Date.now();
+            game.lastDepthIncrease = Date.now();
+
+            if (!game.running) {
+                game.running = true;
+                game.gameLoop();
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function hideScreen(screenId) {
+            document.getElementById(screenId).classList.remove('active');
+            showScreen('gameScreen');
+        }
+
+        function showTechTree() {
+            showScreen('techTreeScreen');
+            updateTechTree();
+        }
+
+        function updateTechTree() {
+            const techs = ['hull1', 'hull2', 'hull3', 'energy1', 'energy2', 'energy3', 'stealth1', 'stealth2', 'stealth3'];
+            const costs = {
+                hull1: 1, hull2: 2, hull3: 3,
+                energy1: 1, energy2: 2, energy3: 3,
+                stealth1: 1, stealth2: 2, stealth3: 3
+            };
+
+            for (let tech of techs) {
+                const node = document.querySelector(`[onclick="unlockTech('${tech}')"]`);
+                if (game.unlockedTechs[tech]) {
+                    node.classList.add('unlocked');
+                    node.classList.remove('locked');
+                    node.style.opacity = '1';
+                    node.style.cursor = 'default';
+                } else if (game.techPoints >= costs[tech]) {
+                    node.classList.remove('locked');
+                } else {
+                    node.classList.add('locked');
+                }
+            }
+        }
+
+        function unlockTech(techId) {
+            const costs = {
+                hull1: 1, hull2: 2, hull3: 3,
+                energy1: 1, energy2: 2, energy3: 3,
+                stealth1: 1, stealth2: 2, stealth3: 3
+            };
+
+            if (!game.unlockedTechs[techId] && game.techPoints >= costs[techId]) {
+                game.unlockedTechs[techId] = true;
+                game.techPoints -= costs[techId];
+                game.applyTechBonuses();
+                game.saveProgress();
+                updateTechTree();
+            }
+        }
+
+        function togglePause() {
+            game.isPaused = !game.isPaused;
+            document.getElementById('pauseScreen').classList.toggle('active');
+        }
+
+        function returnToMenu() {
+            game.isPaused = false;
+            document.getElementById('pauseScreen').classList.remove('active');
+            showScreen('startScreen');
+        }
+
+        // Inicializar ao carregar
+        window.addEventListener('load', () => {
+            game.initSystem();
+        });
+    </script>
+</body>
+</html>
