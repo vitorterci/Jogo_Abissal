@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abismo: Pressão Eterna v2</title>
+    <title>Abismo: Pressão Eterna v3</title>
     <style>
         * {
             margin: 0;
@@ -12,33 +12,26 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #001a33 0%, #003366 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            background: #000814;
             color: #00ff88;
             overflow: hidden;
         }
 
         .game-container {
-            width: 100%;
-            max-width: 1400px;
+            width: 100vw;
             height: 100vh;
-            background: #000814;
-            border: 3px solid #00ff88;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            position: relative;
         }
 
         .screen {
             display: none;
             width: 100%;
             height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .screen.active {
@@ -46,10 +39,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            z-index: 100;
         }
 
         /* TELA INICIAL */
         #startScreen {
+            background: linear-gradient(135deg, #001a33 0%, #003366 100%);
             text-align: center;
         }
 
@@ -86,7 +81,7 @@
             font-size: 0.95em;
             color: #00ccff;
             margin-bottom: 30px;
-            max-width: 600px;
+            max-width: 700px;
             line-height: 1.6;
         }
 
@@ -115,55 +110,67 @@
         /* TELA DO JOGO */
         #gameScreen {
             display: none;
-            flex-direction: row;
+            position: relative;
             width: 100%;
             height: 100%;
-            padding: 0;
         }
 
         #gameScreen.active {
-            display: flex;
+            display: block;
+            z-index: 50;
         }
 
-        .game-main {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
+        .game-canvas-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: calc(100% - 280px);
+            height: 100%;
+            background: #000814;
             overflow: hidden;
         }
 
-        .game-header {
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hud-superior {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: calc(100% - 300px);
+            background: rgba(0, 10, 30, 0.85);
+            border: 2px solid #00ffff;
+            border-radius: 5px;
+            padding: 12px;
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            padding: 12px;
-            background: rgba(0, 30, 60, 0.9);
-            border-bottom: 2px solid #0099ff;
-            min-height: 100px;
+            gap: 15px;
+            z-index: 200;
+            backdrop-filter: blur(3px);
         }
 
         .stat-box {
             background: rgba(0, 0, 0, 0.6);
             padding: 8px;
-            border-radius: 5px;
+            border-radius: 3px;
             border: 1px solid #00ff88;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
         }
 
         .stat-label {
-            font-size: 0.75em;
+            font-size: 0.7em;
             color: #0099ff;
             margin-bottom: 3px;
         }
 
         .stat-bar {
             width: 100%;
-            height: 16px;
+            height: 14px;
             background: #001a33;
             border: 1px solid #00ff88;
-            border-radius: 3px;
+            border-radius: 2px;
             overflow: hidden;
             margin-bottom: 3px;
         }
@@ -178,149 +185,110 @@
         .oxygen-fill { background: linear-gradient(90deg, #00ff00, #00cc00); }
 
         .stat-value {
-            font-size: 0.75em;
+            font-size: 0.7em;
             color: #00ff88;
             text-align: center;
         }
 
-        .depth-display {
-            text-align: center;
-            font-size: 1em;
-            color: #00ff88;
-            font-weight: bold;
-            padding: 5px;
-        }
-
-        .treasure-counter, .souto-counter {
-            text-align: center;
-            font-size: 0.85em;
-            color: #ffaa00;
-        }
-
-        .game-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            gap: 0;
-        }
-
-        .game-canvas-container {
-            position: relative;
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #000814;
-            border-right: 2px solid #00ff88;
-        }
-
-        canvas {
-            display: block;
-            border: 1px solid #0099ff;
-            background: #000814;
-        }
-
-        .side-menu {
-            width: 220px;
-            background: rgba(0, 20, 40, 0.95);
-            border-left: 2px solid #00ff88;
-            padding: 15px;
+        /* MENU LATERAL */
+        .menu-lateral {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(0, 10, 30, 0.95);
+            border-left: 2px solid #00ffff;
+            color: #aaffff;
+            padding: 20px 10px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+            scrollbar-width: thin;
+            scrollbar-color: #00ffff #001122;
+            z-index: 150;
+            box-shadow: -5px 0 15px rgba(0, 255, 255, 0.2);
         }
 
-        .menu-title {
-            font-size: 1.1em;
-            color: #00ff88;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-align: center;
-            border-bottom: 2px solid #0099ff;
-            padding-bottom: 10px;
+        .menu-lateral::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .menu-section {
-            margin-bottom: 15px;
+        .menu-lateral::-webkit-scrollbar-track {
+            background: #001122;
         }
 
-        .menu-section-title {
-            font-size: 0.85em;
-            color: #0099ff;
-            font-weight: bold;
-            margin-bottom: 8px;
+        .menu-lateral::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 4px;
+        }
+
+        .menu-lateral::-webkit-scrollbar-thumb:hover {
+            background: #66ffff;
+        }
+
+        .menu-categoria {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #006688;
+            padding-bottom: 15px;
+        }
+
+        .menu-categoria:last-child {
+            border-bottom: none;
+        }
+
+        .menu-categoria h3 {
+            color: #00ffff;
+            font-size: 0.9em;
+            margin: 0 0 12px 0;
             text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #00ffff;
         }
 
-        .menu-item {
-            background: rgba(0, 50, 80, 0.6);
-            border: 1px solid #0099ff;
-            border-radius: 3px;
+        .comando-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            background: rgba(0, 50, 100, 0.3);
             padding: 8px;
-            margin-bottom: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.85em;
-            color: #00ccff;
-        }
-
-        .menu-item:hover {
-            background: rgba(0, 100, 150, 0.8);
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-        }
-
-        .menu-item.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            background: rgba(50, 50, 50, 0.6);
-        }
-
-        .menu-item-icon {
-            font-size: 1.1em;
-            margin-right: 5px;
-        }
-
-        .menu-item-key {
-            float: right;
-            font-size: 0.75em;
-            color: #ffaa00;
-            font-weight: bold;
-        }
-
-        .menu-item-status {
-            display: block;
-            font-size: 0.75em;
-            color: #00ff88;
-            margin-top: 3px;
-        }
-
-        .menu-divider {
-            height: 1px;
-            background: #0099ff;
-            margin: 10px 0;
-            opacity: 0.5;
-        }
-
-        .tech-tree-btn-menu {
-            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
-            color: #000814;
-            padding: 10px;
-            border: none;
             border-radius: 3px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            width: 100%;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            gap: 8px;
         }
 
-        .tech-tree-btn-menu:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        .comando-item:hover {
+            background: rgba(0, 100, 200, 0.4);
+            transform: translateX(-3px);
+        }
+
+        .tecla {
+            background: #001122;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 3px;
+            min-width: 50px;
+            text-align: center;
+            font-size: 0.75em;
+            box-shadow: 0 0 8px #00ffff;
+            flex-shrink: 0;
+        }
+
+        .descricao {
+            color: #ccffff;
+            font-size: 0.75em;
+            line-height: 1.3;
+        }
+
+        .descricao small {
+            color: #88aaff;
+            font-size: 0.7em;
+            display: block;
         }
 
         /* TELA DE GAME OVER */
         #gameOverScreen {
+            background: linear-gradient(135deg, #001a33 0%, #003366 100%);
             text-align: center;
         }
 
@@ -355,14 +323,10 @@
             border-bottom: 1px solid #003366;
         }
 
-        .stat-line:last-child {
-            border-bottom: none;
-        }
-
         /* TELA DE ÁRVORE DE HABILIDADES */
         #techTreeScreen {
+            background: linear-gradient(135deg, #001a33 0%, #003366 100%);
             overflow-y: auto;
-            max-height: 90vh;
             padding: 20px;
         }
 
@@ -464,7 +428,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 300;
         }
 
         #pauseScreen.active {
@@ -483,78 +447,42 @@
             gap: 15px;
         }
 
-        /* EFEITOS ESPECIAIS */
-        .pressure-effect {
-            animation: pressureShake 0.1s ease-out;
-        }
-
-        @keyframes pressureShake {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(2px, -2px); }
-            50% { transform: translate(-2px, 2px); }
-            75% { transform: translate(2px, 2px); }
-        }
-
         /* RESPONSIVIDADE */
         @media (max-width: 1024px) {
-            .side-menu {
-                width: 180px;
-                padding: 10px;
+            .menu-lateral {
+                width: 220px;
             }
 
-            .game-header {
-                grid-template-columns: repeat(3, 1fr);
+            .game-canvas-container {
+                width: calc(100% - 220px);
             }
 
-            canvas {
-                max-width: 100%;
-                height: auto;
+            .hud-superior {
+                width: calc(100% - 240px);
             }
         }
 
         @media (max-width: 768px) {
-            .game-container {
-                max-width: 100vw;
-                border-radius: 0;
-            }
-
-            .game-content {
-                flex-direction: column;
-            }
-
-            .side-menu {
+            .game-canvas-container {
                 width: 100%;
-                border-left: none;
-                border-top: 2px solid #00ff88;
-                max-height: 150px;
-                padding: 8px;
+                height: 70vh;
             }
 
-            .game-header {
+            .menu-lateral {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                width: 100%;
+                height: 30vh;
+                border-left: none;
+                border-top: 2px solid #00ffff;
+                z-index: 150;
+            }
+
+            .hud-superior {
+                width: calc(100% - 20px);
                 grid-template-columns: repeat(2, 1fr);
             }
-
-            canvas {
-                width: 100%;
-                height: auto;
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 30, 60, 0.5);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #00ff88;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00ccff;
         }
     </style>
 </head>
@@ -564,118 +492,121 @@
         <div id="startScreen" class="screen active">
             <div class="title">⚓ ABISMO ⚓</div>
             <div class="subtitle">Pressão Eterna</div>
-            <div class="version-tag">Versão 2.0 - Mundo Expandido</div>
+            <div class="version-tag">Versão 3.0 - Inteligência Artificial dos Monstros</div>
             <div class="start-info">
                 Desce ao fundo do oceano em busca de tesouros e mistérios.<br>
-                Use o sonar para revelar monstros adormecidos, mas cuidado:<br>
-                eles virão em sua direção quando descobertos.<br><br>
-                <strong>Novo:</strong> Mundo expandido (5000x5000), câmera dinâmica e menu de controles!<br><br>
-                <strong>Controles:</strong> Setas/WASD para mover | ESPAÇO para sonar | L para lanterna | P para pausa
+                <strong>NOVO:</strong> Monstros agora têm comportamento inteligente com 3 estados (Dormindo, Alerta, Ataque)<br>
+                Use o SONAR para revelar, ou a LANTERNA para explorar com segurança!<br><br>
+                <strong>Controles:</strong> WASD/Setas para mover | ESPAÇO para sonar | L para lanterna | P para pausa
             </div>
             <button onclick="startGame()">Iniciar Mergulho</button>
         </div>
 
         <!-- TELA DO JOGO -->
         <div id="gameScreen" class="screen">
-            <div class="game-main">
-                <div class="game-header">
+            <div class="game-canvas-container">
+                <canvas id="gameCanvas"></canvas>
+                <div class="hud-superior">
                     <div class="stat-box">
-                        <div class="stat-label">HP (Casco)</div>
+                        <div class="stat-label">❤️ HP</div>
                         <div class="stat-bar">
                             <div id="hpFill" class="stat-fill hp-fill" style="width: 100%"></div>
                         </div>
                         <div class="stat-value"><span id="hpValue">100</span>/100</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-label">MP (Energia)</div>
+                        <div class="stat-label">💙 MP</div>
                         <div class="stat-bar">
                             <div id="mpFill" class="stat-fill mp-fill" style="width: 100%"></div>
                         </div>
                         <div class="stat-value"><span id="mpValue">100</span>/100</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-label">O₂ (Oxigênio)</div>
+                        <div class="stat-label">💚 O₂</div>
                         <div class="stat-bar">
                             <div id="oxygenFill" class="stat-fill oxygen-fill" style="width: 100%"></div>
                         </div>
                         <div class="stat-value"><span id="oxygenValue">100</span>/100</div>
                     </div>
-                    <div class="stat-box treasure-counter">
-                        <div class="stat-label">💰 Tesouros</div>
-                        <div class="stat-value" style="font-size: 1.1em;"><span id="treasureCount">0</span></div>
+                    <div class="stat-box">
+                        <div class="stat-label">💰 TESOUROS</div>
+                        <div class="stat-value" style="font-size: 1.2em;"><span id="treasureCount">0</span></div>
                     </div>
-                    <div class="stat-box souto-counter">
-                        <div class="stat-label">🔮 Soutos</div>
-                        <div class="stat-value" style="font-size: 1.1em;"><span id="soutoCount">0</span></div>
+                    <div class="stat-box">
+                        <div class="stat-label">🔮 SOUTOS</div>
+                        <div class="stat-value" style="font-size: 1.2em;"><span id="soutoCount">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MENU LATERAL -->
+            <div class="menu-lateral">
+                <div class="menu-categoria">
+                    <h3>⚓ NAVEGAÇÃO</h3>
+                    <div class="comando-item">
+                        <span class="tecla">W A S D</span>
+                        <span class="descricao">Mover submarino<br><small>Cenário se move ao redor</small></span>
+                    </div>
+                    <div class="comando-item">
+                        <span class="tecla">←↑↓→</span>
+                        <span class="descricao">Alternativo<br><small>Mesma função</small></span>
                     </div>
                 </div>
 
-                <div class="depth-display">
-                    📊 Profundidade: <span id="depthValue">0</span>m / 11000m | Posição: (<span id="posX">2500</span>, <span id="posY">2500</span>)
-                </div>
-
-                <div class="game-content">
-                    <div class="game-canvas-container">
-                        <canvas id="gameCanvas" width="900" height="500"></canvas>
+                <div class="menu-categoria">
+                    <h3>📡 SISTEMAS</h3>
+                    <div class="comando-item">
+                        <span class="tecla">ESPAÇO</span>
+                        <span class="descricao">ATIVAR SONAR<br><small>Custo: 15 MP<br>Revela monstros<br>ATRAI por 10s</small></span>
                     </div>
-
-                    <div class="side-menu">
-                        <div class="menu-title">🎮 COMANDOS</div>
-
-                        <div class="menu-section">
-                            <div class="menu-section-title">Movimento</div>
-                            <div class="menu-item">
-                                <span class="menu-item-icon">⬆️</span> Cima
-                                <span class="menu-item-key">W</span>
-                            </div>
-                            <div class="menu-item">
-                                <span class="menu-item-icon">⬇️</span> Baixo
-                                <span class="menu-item-key">S</span>
-                            </div>
-                            <div class="menu-item">
-                                <span class="menu-item-icon">⬅️</span> Esquerda
-                                <span class="menu-item-key">A</span>
-                            </div>
-                            <div class="menu-item">
-                                <span class="menu-item-icon">➡️</span> Direita
-                                <span class="menu-item-key">D</span>
-                            </div>
-                        </div>
-
-                        <div class="menu-divider"></div>
-
-                        <div class="menu-section">
-                            <div class="menu-section-title">Habilidades</div>
-                            <div class="menu-item" id="sonarMenuItem" onclick="game.useAbility('sonar')">
-                                <span class="menu-item-icon">🔊</span> Sonar
-                                <span class="menu-item-key">ESPAÇO</span>
-                                <span class="menu-item-status" id="sonarStatus">MP: 15</span>
-                            </div>
-                            <div class="menu-item" id="lanternMenuItem" onclick="game.toggleLantern()">
-                                <span class="menu-item-icon">💡</span> Lanterna
-                                <span class="menu-item-key">L</span>
-                                <span class="menu-item-status" id="lanternStatus">Desligada</span>
-                            </div>
-                        </div>
-
-                        <div class="menu-divider"></div>
-
-                        <div class="menu-section">
-                            <div class="menu-section-title">Status</div>
-                            <div class="menu-item">
-                                <span class="menu-item-icon">🌊</span> Profundidade
-                                <span class="menu-item-key" id="depthStatus">0m</span>
-                            </div>
-                            <div class="menu-item">
-                                <span class="menu-item-icon">🗺️</span> Mundo
-                                <span class="menu-item-key">5000x5000</span>
-                            </div>
-                        </div>
-
-                        <button class="tech-tree-btn-menu" onclick="showTechTree()">🌳 Aprimoramentos</button>
-                        <button class="tech-tree-btn-menu" onclick="togglePause()" style="background: linear-gradient(135deg, #ff6600 0%, #ffaa00 100%); margin-top: 5px;">⏸ Pausa</button>
+                    <div class="comando-item">
+                        <span class="tecla">L</span>
+                        <span class="descricao">Lanterna ON/OFF<br><small>Custo: 1 MP/seg<br>Cone de luz</small></span>
                     </div>
                 </div>
+
+                <div class="menu-categoria">
+                    <h3>👾 MONSTROS</h3>
+                    <div class="comando-item">
+                        <span class="tecla">😴</span>
+                        <span class="descricao">DORMINDO<br><small>Invisível, seguro</small></span>
+                    </div>
+                    <div class="comando-item">
+                        <span class="tecla">⚠️</span>
+                        <span class="descricao">ALERTA<br><small>Visível, lento</small></span>
+                    </div>
+                    <div class="comando-item">
+                        <span class="tecla">💢</span>
+                        <span class="descricao">ATAQUE<br><small>Rápido, perigoso!</small></span>
+                    </div>
+                </div>
+
+                <div class="menu-categoria">
+                    <h3>📊 STATUS</h3>
+                    <div class="comando-item">
+                        <span class="tecla">🌊</span>
+                        <span class="descricao">Profundidade<br><span id="depthStatus">0m</span></span>
+                    </div>
+                    <div class="comando-item">
+                        <span class="tecla">📍</span>
+                        <span class="descricao">Posição<br><span id="posStatus">2500,2500</span></span>
+                    </div>
+                </div>
+
+                <div class="menu-categoria">
+                    <h3>🎮 DICAS</h3>
+                    <div class="comando-item">
+                        <span class="tecla">🔇</span>
+                        <span class="descricao">Sonar atrai<br><small>Use com cuidado</small></span>
+                    </div>
+                    <div class="comando-item">
+                        <span class="tecla">🔦</span>
+                        <span class="descricao">Lanterna segura<br><small>Não atrai</small></span>
+                    </div>
+                </div>
+
+                <button style="width: 100%; margin-top: 10px; padding: 8px; font-size: 0.9em;" onclick="showTechTree()">🌳 Aprimoramentos</button>
+                <button style="width: 100%; margin-top: 5px; padding: 8px; font-size: 0.9em; background: linear-gradient(135deg, #ff6600 0%, #ffaa00 100%);" onclick="togglePause()">⏸ Pausa</button>
             </div>
         </div>
 
@@ -698,9 +629,8 @@
             <div class="tech-tree-title">🌳 Árvore de Habilidades</div>
             <div class="tech-points">Pontos de Tecnologia: <span id="techPoints">0</span></div>
             <div class="tech-branches">
-                <!-- RAMO CASCO -->
                 <div class="branch">
-                    <div class="branch-title">🛡️ RAMO CASCO</div>
+                    <div class="branch-title">🛡️ CASCO</div>
                     <div class="tech-node" onclick="unlockTech('hull1')">
                         <div class="tech-name">Casco Reforçado</div>
                         <div class="tech-desc">+15% HP máximo</div>
@@ -718,9 +648,8 @@
                     </div>
                 </div>
 
-                <!-- RAMO ENERGIA -->
                 <div class="branch">
-                    <div class="branch-title">⚡ RAMO ENERGIA</div>
+                    <div class="branch-title">⚡ ENERGIA</div>
                     <div class="tech-node" onclick="unlockTech('energy1')">
                         <div class="tech-name">Capacitores</div>
                         <div class="tech-desc">+20% MP máximo</div>
@@ -738,9 +667,8 @@
                     </div>
                 </div>
 
-                <!-- RAMO FURTIVIDADE -->
                 <div class="branch">
-                    <div class="branch-title">👻 RAMO FURTIVIDADE</div>
+                    <div class="branch-title">👻 FURTIVIDADE</div>
                     <div class="tech-node" onclick="unlockTech('stealth1')">
                         <div class="tech-name">Filtros Avançados</div>
                         <div class="tech-desc">-15% consumo oxigênio</div>
@@ -773,15 +701,21 @@
     </div>
 
     <script>
-        // ===== SISTEMA DE JOGO V2 =====
+        // ===== SISTEMA DE JOGO V3 =====
+        
+        // Estados dos monstros
+        const MONSTER_STATE = {
+            DORMINDO: 0,
+            ALERTA: 1,
+            ATAQUE: 2
+        };
+
         const game = {
-            // Configurações do mundo
             WORLD_WIDTH: 5000,
             WORLD_HEIGHT: 5000,
-            CANVAS_WIDTH: 900,
-            CANVAS_HEIGHT: 500,
+            CANVAS_WIDTH: 0,
+            CANVAS_HEIGHT: 0,
 
-            // Estado do jogador (posição no MUNDO)
             player: {
                 x: 2500,
                 y: 2500,
@@ -801,10 +735,10 @@
                 shieldActive: false,
                 shieldTime: 0,
                 initialX: 2500,
-                initialY: 2500
+                initialY: 2500,
+                direcao: 0
             },
 
-            // Configurações
             config: {
                 depthIncreaseInterval: 30000,
                 depthIncreaseAmount: 100,
@@ -813,14 +747,14 @@
                 lanternMpCost: 1,
                 sonarMpCost: 15,
                 sonarChaosTime: 10000,
-                sonarRadius: 250
+                sonarRadius: 500,
+                lanternRange: 200,
+                lanternAngle: Math.PI / 6
             },
 
-            // Listas de entidades
             monsters: [],
             items: [],
 
-            // Controles
             keys: {},
             isPaused: false,
             gameStartTime: 0,
@@ -830,19 +764,17 @@
             chaosMode: false,
             chaosEndTime: 0,
 
-            // Tecnologias
             unlockedTechs: {},
             techPoints: 0,
             damageReduction: 0,
 
-            // Inicializar sistema
             initSystem() {
                 this.loadProgress();
                 this.setupEventListeners();
-                console.log("System initialized - World size: " + this.WORLD_WIDTH + "x" + this.WORLD_HEIGHT);
+                this.CANVAS_WIDTH = document.getElementById('gameCanvas').clientWidth;
+                this.CANVAS_HEIGHT = document.getElementById('gameCanvas').clientHeight;
             },
 
-            // Carregar progresso
             loadProgress() {
                 const saved = localStorage.getItem('abismoProgress');
                 if (saved) {
@@ -855,7 +787,6 @@
                 }
             },
 
-            // Salvar progresso
             saveProgress() {
                 const progress = {
                     unlockedTechs: this.unlockedTechs,
@@ -866,7 +797,6 @@
                 localStorage.setItem('abismoProgress', JSON.stringify(progress));
             },
 
-            // Aplicar bônus de tecnologias
             applyTechBonuses() {
                 let hpBonus = 1;
                 let mpBonus = 1;
@@ -883,7 +813,6 @@
                 this.player.maxOxygen = Math.floor(100 * oxygenBonus);
             },
 
-            // Setup de eventos
             setupEventListeners() {
                 document.addEventListener('keydown', (e) => {
                     this.keys[e.key.toLowerCase()] = true;
@@ -896,16 +825,14 @@
                 });
             },
 
-            // Spawn inicial de monstros
             spawnInitialMonsters() {
-                for (let i = 0; i < 30; i++) {
+                for (let i = 0; i < 40; i++) {
                     this.spawnMonster();
                 }
             },
 
-            // Spawn de monstro
             spawnMonster() {
-                const types = ['small', 'medium', 'large'];
+                const types = ['pequeno', 'medio', 'grande'];
                 let type = types[Math.floor(Math.random() * 2)];
 
                 if (this.player.depth > 6000) {
@@ -915,36 +842,42 @@
                 const monster = {
                     x: Math.random() * this.WORLD_WIDTH,
                     y: Math.random() * this.WORLD_HEIGHT,
-                    type: type,
-                    revealed: false,
-                    active: false,
+                    tipo: type,
+                    estado: MONSTER_STATE.DORMINDO,
+                    visivel: false,
+                    tempoAlerta: 0,
+                    tempoNoConeLuz: 0,
+                    direcao: 0,
                     vx: 0,
-                    vy: 0,
-                    speed: type === 'small' ? 2 : (type === 'medium' ? 1.2 : 0.8),
-                    damage: type === 'small' ? 5 : (type === 'medium' ? 15 : 30),
-                    size: type === 'small' ? 12 : (type === 'medium' ? 20 : 30)
+                    vy: 0
                 };
+
+                if (type === 'pequeno') {
+                    monster.velocidadeBase = 1.5;
+                    monster.dano = 5;
+                    monster.tamanho = 15;
+                } else if (type === 'medio') {
+                    monster.velocidadeBase = 0.8;
+                    monster.dano = 15;
+                    monster.tamanho = 30;
+                } else {
+                    monster.velocidadeBase = 0.4;
+                    monster.dano = 30;
+                    monster.tamanho = 50;
+                }
+
+                monster.velocidadeAtual = monster.velocidadeBase * (0.8 + Math.random() * 0.4);
 
                 this.monsters.push(monster);
             },
 
-            // Spawn inicial de itens
             spawnInitialItems() {
-                for (let i = 0; i < 20; i++) {
-                    this.spawnItem('treasure');
-                }
-                for (let i = 0; i < 15; i++) {
-                    this.spawnItem('souto');
-                }
-                for (let i = 0; i < 15; i++) {
-                    this.spawnItem('oxygen');
-                }
-                for (let i = 0; i < 10; i++) {
-                    this.spawnItem('battery');
-                }
+                for (let i = 0; i < 20; i++) this.spawnItem('treasure');
+                for (let i = 0; i < 15; i++) this.spawnItem('souto');
+                for (let i = 0; i < 15; i++) this.spawnItem('oxygen');
+                for (let i = 0; i < 10; i++) this.spawnItem('battery');
             },
 
-            // Spawn de item
             spawnItem(type) {
                 const item = {
                     x: Math.random() * this.WORLD_WIDTH,
@@ -957,7 +890,6 @@
                 this.items.push(item);
             },
 
-            // Usar habilidade
             useAbility(ability) {
                 if (this.isPaused) return;
 
@@ -969,7 +901,6 @@
                 }
             },
 
-            // Ativar sonar
             activateSonar() {
                 this.sonarActive = true;
                 this.sonarTime = 0;
@@ -977,35 +908,46 @@
                 this.chaosEndTime = Date.now() + this.config.sonarChaosTime;
 
                 for (let monster of this.monsters) {
-                    const dist = Math.hypot(
-                        monster.x - this.player.x,
-                        monster.y - this.player.y
-                    );
+                    const dist = Math.hypot(monster.x - this.player.x, monster.y - this.player.y);
 
                     if (dist < this.config.sonarRadius) {
-                        monster.revealed = true;
-                        monster.active = true;
+                        monster.estado = MONSTER_STATE.ALERTA;
+                        monster.visivel = true;
+                        monster.tempoAlerta = 0;
                     }
                 }
 
                 for (let item of this.items) {
-                    const dist = Math.hypot(
-                        item.x - this.player.x,
-                        item.y - this.player.y
-                    );
+                    const dist = Math.hypot(item.x - this.player.x, item.y - this.player.y);
                     if (dist < this.config.sonarRadius) {
                         item.revealed = true;
                     }
                 }
             },
 
-            // Toggle lanterna
             toggleLantern() {
                 if (this.isPaused) return;
                 this.player.lanternOn = !this.player.lanternOn;
             },
 
-            // Loop principal
+            verificarConeLuz(monster) {
+                if (!this.player.lanternOn) return false;
+
+                const dx = monster.x - this.player.x;
+                const dy = monster.y - this.player.y;
+                const distancia = Math.hypot(dx, dy);
+
+                if (distancia > this.config.lanternRange) return false;
+
+                const anguloMonstro = Math.atan2(dy, dx);
+                let diferencaAngulo = Math.abs(this.player.direcao - anguloMonstro);
+
+                while (diferencaAngulo > Math.PI) diferencaAngulo -= 2 * Math.PI;
+                diferencaAngulo = Math.abs(diferencaAngulo);
+
+                return diferencaAngulo < this.config.lanternAngle;
+            },
+
             gameLoop() {
                 if (!this.isPaused) {
                     this.update();
@@ -1016,12 +958,10 @@
                 }
             },
 
-            // Atualizar lógica
             update() {
                 const now = Date.now();
                 const deltaTime = 0.016;
 
-                // Movimento do jogador (no MUNDO)
                 this.player.vx = 0;
                 this.player.vy = 0;
 
@@ -1030,26 +970,26 @@
                 if (this.keys['arrowleft'] || this.keys['a']) this.player.vx = -this.player.speed;
                 if (this.keys['arrowright'] || this.keys['d']) this.player.vx = this.player.speed;
 
+                if (this.player.vx !== 0 || this.player.vy !== 0) {
+                    this.player.direcao = Math.atan2(this.player.vy, this.player.vx);
+                }
+
                 this.player.x += this.player.vx;
                 this.player.y += this.player.vy;
 
-                // Limites do mundo
                 this.player.x = Math.max(0, Math.min(this.WORLD_WIDTH, this.player.x));
                 this.player.y = Math.max(0, Math.min(this.WORLD_HEIGHT, this.player.y));
 
-                // Oxigênio
                 let oxygenDecay = this.config.oxygenDecayRate;
                 if (this.unlockedTechs.stealth1) oxygenDecay *= 0.85;
                 this.player.oxygen -= oxygenDecay * deltaTime;
 
-                // Lanterna
                 if (this.player.lanternOn && this.player.mp > 0) {
                     this.player.mp -= this.config.lanternMpCost;
                 } else if (this.player.mp <= 0) {
                     this.player.lanternOn = false;
                 }
 
-                // MP recharge
                 if (!this.player.lanternOn && this.player.mp < this.player.maxMp) {
                     let rechargeRate = this.config.mpRechargeRate;
                     if (this.unlockedTechs.energy2) rechargeRate *= 1.1;
@@ -1057,7 +997,6 @@
                     this.player.mp = Math.min(this.player.maxMp, this.player.mp);
                 }
 
-                // Profundidade
                 if (now - this.lastDepthIncrease >= this.config.depthIncreaseInterval) {
                     this.player.depth += this.config.depthIncreaseAmount;
                     this.lastDepthIncrease = now;
@@ -1067,12 +1006,11 @@
                         this.saveProgress();
                     }
 
-                    if (this.monsters.length < 50) {
+                    if (this.monsters.length < 60) {
                         this.spawnMonster();
                     }
                 }
 
-                // Escudo de emergência
                 if (this.unlockedTechs.hull3 && this.player.hp < this.player.maxHp * 0.2 && !this.player.shieldActive) {
                     this.player.shieldActive = true;
                     this.player.shieldTime = 3000;
@@ -1085,35 +1023,75 @@
                     }
                 }
 
-                // Atualizar monstros
+                // Atualizar monstros com novo sistema de estados
                 for (let monster of this.monsters) {
-                    if (monster.active && this.chaosMode) {
+                    // Verificar detecção por lanterna
+                    const noConeLuz = this.verificarConeLuz(monster);
+
+                    if (noConeLuz) {
+                        if (monster.estado === MONSTER_STATE.DORMINDO) {
+                            monster.estado = MONSTER_STATE.ALERTA;
+                            monster.visivel = true;
+                            monster.tempoNoConeLuz = 0;
+                        }
+
+                        if (monster.estado === MONSTER_STATE.ALERTA) {
+                            monster.tempoNoConeLuz += deltaTime;
+                            if (monster.tempoNoConeLuz > 2) {
+                                monster.estado = MONSTER_STATE.ATAQUE;
+                            }
+                        }
+                    } else {
+                        monster.tempoNoConeLuz = 0;
+                    }
+
+                    // Atualizar tempo de alerta (sonar)
+                    if (this.chaosMode && monster.estado === MONSTER_STATE.ALERTA) {
+                        monster.tempoAlerta += deltaTime;
+                    }
+
+                    // Movimento baseado no estado
+                    if (monster.estado === MONSTER_STATE.ALERTA || monster.estado === MONSTER_STATE.ATAQUE) {
                         const dx = this.player.x - monster.x;
                         const dy = this.player.y - monster.y;
                         const dist = Math.hypot(dx, dy);
 
                         if (dist > 0) {
-                            monster.vx = (dx / dist) * monster.speed;
-                            monster.vy = (dy / dist) * monster.speed;
+                            monster.direcao = Math.atan2(dy, dx);
                         }
 
-                        monster.x += monster.vx;
-                        monster.y += monster.vy;
+                        let velocidade = monster.velocidadeBase;
+                        if (monster.estado === MONSTER_STATE.ATAQUE) {
+                            velocidade *= 3;
+                        }
 
+                        monster.x += Math.cos(monster.direcao) * velocidade;
+                        monster.y += Math.sin(monster.direcao) * velocidade;
+
+                        // Colisão com jogador
                         if (this.checkCollision(this.player, monster)) {
-                            let damage = monster.damage;
+                            let damage = monster.dano;
                             if (this.damageReduction) {
                                 damage *= (1 - this.damageReduction);
                             }
                             if (!this.player.shieldActive) {
                                 this.player.hp -= damage;
                             }
-                            monster.active = false;
-                            monster.revealed = false;
+                            monster.estado = MONSTER_STATE.DORMINDO;
+                            monster.visivel = false;
 
                             if (this.player.hp <= 0) {
                                 this.endGame();
                             }
+                        }
+                    }
+
+                    // Voltar a dormir após sonar
+                    if (this.chaosMode && monster.tempoAlerta > 10) {
+                        if (Math.random() > (this.unlockedTechs.stealth2 ? 0.8 : 1)) {
+                            monster.estado = MONSTER_STATE.DORMINDO;
+                            monster.visivel = false;
+                            monster.tempoAlerta = 0;
                         }
                     }
                 }
@@ -1121,12 +1099,6 @@
                 // Verificar fim do caos
                 if (this.chaosMode && now > this.chaosEndTime) {
                     this.chaosMode = false;
-                    for (let monster of this.monsters) {
-                        if (Math.random() > (this.unlockedTechs.stealth2 ? 0.8 : 1)) {
-                            monster.active = false;
-                            monster.revealed = false;
-                        }
-                    }
                 }
 
                 // Colisão com itens
@@ -1170,12 +1142,10 @@
                 this.updateUI();
             },
 
-            // Renderizar jogo
             render() {
                 const canvas = document.getElementById('gameCanvas');
                 const ctx = canvas.getContext('2d');
 
-                // Fundo baseado em profundidade
                 const depth = this.player.depth;
                 let bgColor;
                 if (depth < 200) {
@@ -1195,29 +1165,24 @@
                 ctx.fillStyle = bgColor;
                 ctx.fillRect(0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
 
-                // Efeito de tremor em profundidades extremas
                 if (depth > 4000) {
                     const shake = Math.sin(Date.now() * 0.01) * 1.5;
                     ctx.translate(shake, shake);
                 }
 
-                // Calcular offset da câmera (submarino no centro)
                 const cameraX = this.player.x - this.CANVAS_WIDTH / 2;
                 const cameraY = this.player.y - this.CANVAS_HEIGHT / 2;
 
-                // Renderizar itens
                 for (let item of this.items) {
                     if (!item.collected) {
                         this.renderItem(ctx, item, cameraX, cameraY);
                     }
                 }
 
-                // Renderizar monstros
                 for (let monster of this.monsters) {
                     this.renderMonster(ctx, monster, cameraX, cameraY);
                 }
 
-                // Renderizar sonar
                 if (this.sonarActive) {
                     this.sonarTime += 0.016;
                     const progress = this.sonarTime / 0.6;
@@ -1232,15 +1197,17 @@
                     }
                 }
 
-                // Renderizar lanterna
                 if (this.player.lanternOn) {
-                    ctx.fillStyle = 'rgba(255, 200, 0, 0.1)';
+                    ctx.fillStyle = 'rgba(255, 200, 0, 0.15)';
                     ctx.beginPath();
-                    ctx.arc(this.CANVAS_WIDTH / 2, this.CANVAS_HEIGHT / 2, 150, 0, Math.PI * 2);
+                    ctx.moveTo(this.CANVAS_WIDTH / 2, this.CANVAS_HEIGHT / 2);
+                    ctx.arc(this.CANVAS_WIDTH / 2, this.CANVAS_HEIGHT / 2, this.config.lanternRange, 
+                            this.player.direcao - this.config.lanternAngle, 
+                            this.player.direcao + this.config.lanternAngle);
+                    ctx.lineTo(this.CANVAS_WIDTH / 2, this.CANVAS_HEIGHT / 2);
                     ctx.fill();
                 }
 
-                // Renderizar escudo
                 if (this.player.shieldActive) {
                     ctx.strokeStyle = `rgba(0, 255, 136, ${this.player.shieldTime / 3000})`;
                     ctx.lineWidth = 3;
@@ -1249,28 +1216,21 @@
                     ctx.stroke();
                 }
 
-                // Renderizar submarino (sempre no centro)
                 this.renderSubmarine(ctx);
 
-                // Efeito de caos
                 if (this.chaosMode) {
                     ctx.fillStyle = `rgba(255, 0, 0, ${0.1 * Math.sin(Date.now() * 0.01)})`;
                     ctx.fillRect(0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
                 }
-
-                // Renderizar grid do mundo (opcional, para debug)
-                if (false) {
-                    this.renderWorldGrid(ctx, cameraX, cameraY);
-                }
             },
 
-            // Renderizar submarino no centro
             renderSubmarine(ctx) {
                 const x = this.CANVAS_WIDTH / 2;
                 const y = this.CANVAS_HEIGHT / 2;
 
                 ctx.save();
                 ctx.translate(x, y);
+                ctx.rotate(this.player.direcao);
 
                 ctx.fillStyle = '#00ff88';
                 ctx.fillRect(-15, -10, 30, 20);
@@ -1284,7 +1244,6 @@
                 ctx.restore();
             },
 
-            // Renderizar monstro com offset de câmera
             renderMonster(ctx, monster, cameraX, cameraY) {
                 const screenX = monster.x - cameraX;
                 const screenY = monster.y - cameraY;
@@ -1293,32 +1252,28 @@
                     return;
                 }
 
-                if (!monster.revealed && !this.player.lanternOn) {
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
-                    ctx.fillRect(screenX - 2, screenY - 2, 4, 4);
-                } else if (monster.revealed || this.player.lanternOn) {
-                    const colors = {
-                        small: '#ff4444',
-                        medium: '#ff0000',
-                        large: '#cc0000'
-                    };
+                if (!monster.visivel) return;
 
-                    ctx.fillStyle = colors[monster.type];
-                    ctx.beginPath();
-                    ctx.arc(screenX, screenY, monster.size / 2, 0, Math.PI * 2);
-                    ctx.fill();
+                const colors = {
+                    pequeno: monster.estado === MONSTER_STATE.ATAQUE ? '#ff1111' : '#ff4444',
+                    medio: monster.estado === MONSTER_STATE.ATAQUE ? '#ff0000' : '#ff2222',
+                    grande: monster.estado === MONSTER_STATE.ATAQUE ? '#cc0000' : '#ff0000'
+                };
 
-                    ctx.fillStyle = '#ffff00';
-                    ctx.beginPath();
-                    ctx.arc(screenX - monster.size / 4, screenY - monster.size / 4, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(screenX + monster.size / 4, screenY - monster.size / 4, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+                ctx.fillStyle = colors[monster.tipo];
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, monster.tamanho / 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.arc(screenX - monster.tamanho / 4, screenY - monster.tamanho / 4, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(screenX + monster.tamanho / 4, screenY - monster.tamanho / 4, 2, 0, Math.PI * 2);
+                ctx.fill();
             },
 
-            // Renderizar item com offset de câmera
             renderItem(ctx, item, cameraX, cameraY) {
                 const screenX = item.x - cameraX;
                 const screenY = item.y - cameraY;
@@ -1346,18 +1301,12 @@
                 } else if (item.type === 'oxygen') {
                     ctx.fillStyle = `rgba(0, 255, 0, ${0.5 + glow * 0.5})`;
                     ctx.fillRect(screenX - item.size / 3, screenY - item.size / 2, item.size / 1.5, item.size);
-                    ctx.strokeStyle = '#00ff00';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(screenX - item.size / 3, screenY - item.size / 2, item.size / 1.5, item.size);
                 } else if (item.type === 'battery') {
                     ctx.fillStyle = `rgba(255, 100, 0, ${0.5 + glow * 0.5})`;
                     ctx.fillRect(screenX - item.size / 2, screenY - item.size / 2, item.size, item.size);
-                    ctx.fillStyle = '#ff6400';
-                    ctx.fillRect(screenX - item.size / 3, screenY - item.size / 3, item.size / 1.5, item.size / 1.5);
                 }
             },
 
-            // Verificar colisão
             checkCollision(obj1, obj2) {
                 const dx = obj1.x - obj2.x;
                 const dy = obj1.y - obj2.y;
@@ -1365,7 +1314,6 @@
                 return dist < 30;
             },
 
-            // Atualizar UI
             updateUI() {
                 document.getElementById('hpValue').textContent = Math.max(0, Math.floor(this.player.hp));
                 document.getElementById('hpFill').style.width = Math.max(0, this.player.hp / this.player.maxHp * 100) + '%';
@@ -1378,27 +1326,11 @@
 
                 document.getElementById('treasureCount').textContent = this.player.treasures;
                 document.getElementById('soutoCount').textContent = this.player.soutos;
-                document.getElementById('depthValue').textContent = this.player.depth;
-                document.getElementById('posX').textContent = Math.floor(this.player.x);
-                document.getElementById('posY').textContent = Math.floor(this.player.y);
-                document.getElementById('techPoints').textContent = this.techPoints;
-
-                // Atualizar menu lateral
                 document.getElementById('depthStatus').textContent = this.player.depth + 'm';
-                document.getElementById('sonarStatus').textContent = this.player.mp >= this.config.sonarMpCost ? 'MP: 15' : 'Sem MP';
-                document.getElementById('lanternStatus').textContent = this.player.lanternOn ? 'Ligada' : 'Desligada';
-
-                const sonarBtn = document.getElementById('sonarMenuItem');
-                const lanternBtn = document.getElementById('lanternMenuItem');
-
-                if (this.player.mp < this.config.sonarMpCost) {
-                    sonarBtn.classList.add('disabled');
-                } else {
-                    sonarBtn.classList.remove('disabled');
-                }
+                document.getElementById('posStatus').textContent = Math.floor(this.player.x) + ',' + Math.floor(this.player.y);
+                document.getElementById('techPoints').textContent = this.techPoints;
             },
 
-            // Fim do jogo
             endGame() {
                 const timeSurvived = Math.floor((Date.now() - this.gameStartTime) / 1000);
                 const distanceTraveled = Math.floor(Math.hypot(
@@ -1419,7 +1351,6 @@
 
         // ===== FUNÇÕES DE INTERFACE =====
         function startGame() {
-            console.log("Starting game v2...");
             showScreen('gameScreen');
 
             game.player.hp = game.player.maxHp;
@@ -1476,8 +1407,6 @@
                 if (game.unlockedTechs[tech]) {
                     node.classList.add('unlocked');
                     node.classList.remove('locked');
-                    node.style.opacity = '1';
-                    node.style.cursor = 'default';
                 } else if (game.techPoints >= costs[tech]) {
                     node.classList.remove('locked');
                 } else {
@@ -1514,7 +1443,6 @@
             showScreen('startScreen');
         }
 
-        // Inicializar ao carregar
         window.addEventListener('load', () => {
             game.initSystem();
         });
